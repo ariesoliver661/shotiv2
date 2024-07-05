@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video App</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #222;
+            color: #ddd;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #111;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .video-card {
+            background-color: #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            margin: 10px;
+            overflow: hidden;
+            width: 300px;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+        }
+
+        .video-info {
+            padding: 10px;
+        }
+
+        .user-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #888;
+        }
+        
+        footer {
+            background: linear-gradient(to right, #444, #666);
+            color: #ccc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        footer a {
+            color: #ff6f61;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        footer a:hover {
+            opacity: 0.8;
+        }
+
+        .view-count {
+            font-size: 14px;
+            color: #888;
+        }
+
+        #bgOptions {
+            display: flex;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        #bgColorInput,
+        #bgInput {
+            margin: 0 10px;
+        }
+
+        #contact {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Video Shoti Site V2 </h1>
+    </header>
+
+    <main>
+        <div class="video-card" id="videoCard">
+            <video controls autoplay id="videoPlayer">
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-info">
+                <h2>User's Name</h2>  
+                <p class="user-info"></p>
+                <footer>
+            UNRELEASED
+        </footer>
+            </div>
+        </div>
+    </main>
+
+    <div id="bgOptions">
+        <input type="color" id="bgColorInput" value="#444">
+        <input type="file" id="bgInput" accept="image/*">
+        <button onclick="applyChanges()">Change Background</button>
+    </div>
+
+    <div id="contact">
+        <p>Contact Developer to suggest or share your favorite Shoti videos:</p>
+        <a href="https://www.facebook.com/Ariesoliver77" style="color: #44f;">Contact Developer</a>
+    </div>
+
+    <script>
+        const viewCountElement = document.getElementById('viewCount');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const apiEndpoint = "https://shoti-srv1.onrender.com/api/v1/request-f";
+
+        function playNextVideo() {
+            fetch(apiEndpoint)
+                .then(response => response.json())
+                .then(data => {
+                    videoPlayer.src = data.data.url;
+                    document.querySelector('.video-info h2').innerText = data.data.user.nickname;
+                    document.querySelector('.user-info').innerText = `${data.data.title}`;
+                    
+                    const videoId = data.data.user.userID;
+                    let views = localStorage.getItem(`videoViews_${videoId}`) || 0;
+                    views = parseInt(views) + 1;
+
+                    localStorage.setItem(`videoViews_${videoId}`, views);
+                    viewCountElement.innerText = views;
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function applyChanges() {
+            const bgColor = document.getElementById('bgColorInput').value;
+            const bgInput = document.getElementById('bgInput');
+
+            document.body.style.backgroundColor = bgColor;
+
+            if (bgInput.files.length > 0) {
+                const imageUrl = URL.createObjectURL(bgInput.files[0]);
+                document.body.style.backgroundImage = `url(${imageUrl})`;
+            }
+        }
+
+        videoPlayer.addEventListener('ended', playNextVideo);
+        playNextVideo();
+    </script>
+</body>
+</html>
